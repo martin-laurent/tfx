@@ -18,7 +18,6 @@ from __future__ import print_function
 
 from typing import Any, Dict, Optional, Text, Type
 
-from tfx import types
 from tfx.components.base import base_component
 from tfx.components.base import base_executor
 from tfx.components.base.base_component import ChannelParameter
@@ -26,6 +25,7 @@ from tfx.components.base.base_component import ExecutionParameter
 from tfx.components.trainer import driver
 from tfx.components.trainer import executor
 from tfx.proto import trainer_pb2
+from tfx.types import standard_artifacts
 from tfx.utils import channel
 
 
@@ -40,13 +40,14 @@ class TrainerSpec(base_component.ComponentSpec):
   }
   INPUTS = {
       'examples':
-          ChannelParameter(type_name='ExamplesPath'),
+          ChannelParameter(type=standard_artifacts.Examples),
       'transform_output':
-          ChannelParameter(type_name='TransformPath', optional=True),
+          ChannelParameter(
+              type=standard_artifacts.TransformResult, optional=True),
       'schema':
-          ChannelParameter(type_name='SchemaPath'),
+          ChannelParameter(type=standard_artifacts.Schema),
   }
-  OUTPUTS = {'output': ChannelParameter(type_name='ModelExportPath')}
+  OUTPUTS = {'output': ChannelParameter(type=standard_artifacts.Model)}
 
 
 class Trainer(base_component.BaseComponent):
@@ -106,8 +107,7 @@ class Trainer(base_component.BaseComponent):
         declared in the same pipeline.
     """
     output = output or channel.Channel(
-        type_name='ModelExportPath',
-        artifacts=[types.Artifact('ModelExportPath')])
+        type=standard_artifacts.Model, artifacts=[standard_artifacts.Model()])
     assert bool(examples) ^ bool(
         transformed_examples
     ), 'Exactly one of example or transformed_example should be set.'

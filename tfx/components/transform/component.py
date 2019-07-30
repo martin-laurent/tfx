@@ -22,6 +22,7 @@ from tfx.components.base import base_component
 from tfx.components.base.base_component import ChannelParameter
 from tfx.components.base.base_component import ExecutionParameter
 from tfx.components.transform import executor
+from tfx.types import standard_artifacts
 from tfx.utils import channel
 
 
@@ -32,12 +33,14 @@ class TransformSpec(base_component.ComponentSpec):
       'module_file': ExecutionParameter(type=(str, Text)),
   }
   INPUTS = {
-      'input_data': ChannelParameter(type_name='ExamplesPath'),
-      'schema': ChannelParameter(type_name='SchemaPath'),
+      'input_data': ChannelParameter(type=standard_artifacts.Examples),
+      'schema': ChannelParameter(type=standard_artifacts.Schema),
   }
   OUTPUTS = {
-      'transform_output': ChannelParameter(type_name='TransformPath'),
-      'transformed_examples': ChannelParameter(type_name='ExamplesPath'),
+      'transform_output':
+          ChannelParameter(type=standard_artifacts.TransformResult),
+      'transformed_examples':
+          ChannelParameter(type=standard_artifacts.Examples),
   }
 
 
@@ -82,11 +85,12 @@ class Transform(base_component.BaseComponent):
         are declared in the same pipeline.
     """
     transform_output = transform_output or channel.Channel(
-        type_name='TransformPath', artifacts=[types.Artifact('TransformPath')])
+        type=standard_artifacts.TransformResult,
+        artifacts=[standard_artifacts.TransformResult()])
     transformed_examples = transformed_examples or channel.Channel(
-        type_name='ExamplesPath',
+        type=standard_artifacts.Examples,
         artifacts=[
-            types.Artifact('ExamplesPath', split=split)
+            standard_artifacts.Examples(split=split)
             for split in types.DEFAULT_EXAMPLE_SPLITS
         ])
     spec = TransformSpec(
