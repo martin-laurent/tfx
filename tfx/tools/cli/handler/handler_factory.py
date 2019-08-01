@@ -84,12 +84,12 @@ def create_handler(flags_dict: Dict[Text, Any]) -> base_handler.BaseHandler:
   packages_list = str(subprocess.check_output(['pip', 'freeze', '--local']))
   if engine == 'airflow':
     if labels.AIRFLOW_PACKAGE_NAME not in packages_list:
-      click.echo('Airflow not found.')
+      sys.exit('Airflow not found.')
     from tfx.tools.cli.handler import airflow_handler  # pylint: disable=g-import-not-at-top
     return airflow_handler.AirflowHandler(flags_dict)
   elif engine == 'kubeflow':
     if labels.KUBEFLOW_PACKAGE_NAME not in packages_list:
-      click.echo('Kubeflow not found.')
+      sys.exit('Kubeflow not found.')
     from tfx.tools.cli.handler import kubeflow_handler  # pylint: disable=g-import-not-at-top
     return kubeflow_handler.KubeflowHandler(flags_dict)
   elif engine == 'beam':
