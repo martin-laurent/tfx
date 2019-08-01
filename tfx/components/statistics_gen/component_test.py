@@ -18,18 +18,18 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tfx import types
 from tfx.components.statistics_gen import component
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class ComponentTest(tf.test.TestCase):
 
   def test_construct(self):
-    train_examples = types.Artifact(type_name='ExamplesPath', split='train')
-    eval_examples = types.Artifact(type_name='ExamplesPath', split='eval')
+    train_examples = standard_artifacts.Examples(split='train')
+    eval_examples = standard_artifacts.Examples(split='eval')
     statistics_gen = component.StatisticsGen(
-        input_data=channel.as_channel([train_examples, eval_examples]))
+        input_data=channel_utils.as_channel([train_examples, eval_examples]))
     self.assertEqual('ExampleStatisticsPath',
                      statistics_gen.outputs.output.type_name)
 

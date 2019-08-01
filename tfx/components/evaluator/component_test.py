@@ -18,28 +18,28 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tfx import types
 from tfx.components.evaluator import component
 from tfx.proto import evaluator_pb2
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class ComponentTest(tf.test.TestCase):
 
   def test_construct(self):
-    examples = types.Artifact(type_name='ExamplesPath')
-    model_exports = types.Artifact(type_name='ModelExportPath')
+    examples = standard_artifacts.Examples()
+    model_exports = standard_artifacts.Model()
     evaluator = component.Evaluator(
-        examples=channel.as_channel([examples]),
-        model_exports=channel.as_channel([model_exports]))
+        examples=channel_utils.as_channel([examples]),
+        model_exports=channel_utils.as_channel([model_exports]))
     self.assertEqual('ModelEvalPath', evaluator.outputs.output.type_name)
 
   def test_construct_with_slice_spec(self):
-    examples = types.Artifact(type_name='ExamplesPath')
-    model_exports = types.Artifact(type_name='ModelExportPath')
+    examples = standard_artifacts.Examples()
+    model_exports = standard_artifacts.Model()
     evaluator = component.Evaluator(
-        examples=channel.as_channel([examples]),
-        model_exports=channel.as_channel([model_exports]),
+        examples=channel_utils.as_channel([examples]),
+        model_exports=channel_utils.as_channel([model_exports]),
         feature_slicing_spec=evaluator_pb2.FeatureSlicingSpec(specs=[
             evaluator_pb2.SingleSlicingSpec(
                 column_for_slicing=['trip_start_hour'])

@@ -22,7 +22,8 @@ from tfx import types
 from tfx.components.base import base_component
 from tfx.components.base.base_component import ChannelParameter
 from tfx.components.schema_gen import executor
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class SchemaGenSpec(base_component.ComponentSpec):
@@ -30,10 +31,10 @@ class SchemaGenSpec(base_component.ComponentSpec):
 
   PARAMETERS = {}
   INPUTS = {
-      'stats': ChannelParameter(type_name='ExampleStatisticsPath'),
+      'stats': ChannelParameter(type=standard_artifacts.ExampleStatistics),
   }
   OUTPUTS = {
-      'output': ChannelParameter(type_name='SchemaPath'),
+      'output': ChannelParameter(type=standard_artifacts.Schema),
   }
 
 
@@ -48,8 +49,8 @@ class SchemaGen(base_component.BaseComponent):
   EXECUTOR_CLASS = executor.Executor
 
   def __init__(self,
-               stats: channel.Channel,
-               output: Optional[channel.Channel] = None,
+               stats: types.Channel,
+               output: Optional[types.Channel] = None,
                name: Optional[Text] = None):
     """Constructs a SchemaGen component.
 
@@ -61,9 +62,7 @@ class SchemaGen(base_component.BaseComponent):
       name: Optional unique name. Necessary iff multiple SchemaGen components
         are declared in the same pipeline.
     """
-    output = output or channel.Channel(
-        type_name='SchemaPath', artifacts=[types.Artifact('SchemaPath')])
-    spec = SchemaGenSpec(
-        stats=channel.as_channel(stats),
-        output=output)
+    output = output or types.Channel(
+        type=standard_artifacts.Schema, artifacts=[standard_artifacts.Schema()])
+    spec = SchemaGenSpec(stats=channel_utils.as_channel(stats), output=output)
     super(SchemaGen, self).__init__(spec=spec, name=name)

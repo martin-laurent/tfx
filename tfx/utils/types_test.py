@@ -54,9 +54,8 @@ class TypesTest(tf.test.TestCase):
       tf_logging.warning = warn_mock
       self.assertEqual({}, types.parse_tfx_type_dict('{}'))
       warn_mock.assert_called_once()
-      self.assertIn(
-          'tfx.utils.types.parse_tfx_type_dict has been renamed to',
-          warn_mock.call_args[0][5])
+      self.assertIn('tfx.utils.types.parse_tfx_type_dict has been renamed to',
+                    warn_mock.call_args[0][5])
 
   def test_jsonify_tfx_type_dict_deprecated(self):
     with mock.patch.object(tf_logging, 'warning'):
@@ -64,9 +63,8 @@ class TypesTest(tf.test.TestCase):
       tf_logging.warning = warn_mock
       self.assertEqual('{}', types.jsonify_tfx_type_dict({}))
       warn_mock.assert_called_once()
-      self.assertIn(
-          'tfx.utils.types.jsonify_tfx_type_dict has been renamed to',
-          warn_mock.call_args[0][5])
+      self.assertIn('tfx.utils.types.jsonify_tfx_type_dict has been renamed to',
+                    warn_mock.call_args[0][5])
 
 
 if __name__ == '__main__':

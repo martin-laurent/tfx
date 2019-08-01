@@ -18,34 +18,34 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tfx import types
 from tfx.components.trainer import component
 from tfx.proto import trainer_pb2
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class ComponentTest(tf.test.TestCase):
 
   def test_construct(self):
-    transformed_examples = types.Artifact(type_name='ExamplesPath')
-    transform_output = types.Artifact(type_name='TransformPath')
-    schema = types.Artifact(type_name='SchemaPath')
+    transformed_examples = standard_artifacts.Examples()
+    transform_output = standard_artifacts.TransformResult()
+    schema = standard_artifacts.Schema()
     trainer = component.Trainer(
         module_file='/path/to/module/file',
-        examples=channel.as_channel([transformed_examples]),
-        transform_output=channel.as_channel([transform_output]),
-        schema=channel.as_channel([schema]),
+        examples=channel_utils.as_channel([transformed_examples]),
+        transform_output=channel_utils.as_channel([transform_output]),
+        schema=channel_utils.as_channel([schema]),
         train_args=trainer_pb2.TrainArgs(num_steps=100),
         eval_args=trainer_pb2.EvalArgs(num_steps=50))
     self.assertEqual('ModelExportPath', trainer.outputs.output.type_name)
 
   def test_construct_without_transform_output(self):
-    transformed_examples = types.Artifact(type_name='ExamplesPath')
-    schema = types.Artifact(type_name='SchemaPath')
+    transformed_examples = standard_artifacts.Examples()
+    schema = standard_artifacts.Schema()
     trainer = component.Trainer(
         module_file='/path/to/module/file',
-        examples=channel.as_channel([transformed_examples]),
-        schema=channel.as_channel([schema]),
+        examples=channel_utils.as_channel([transformed_examples]),
+        schema=channel_utils.as_channel([schema]),
         train_args=trainer_pb2.TrainArgs(num_steps=100),
         eval_args=trainer_pb2.EvalArgs(num_steps=50))
     self.assertEqual('ModelExportPath', trainer.outputs.output.type_name)

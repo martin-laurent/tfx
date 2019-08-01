@@ -27,7 +27,8 @@ from tfx.components.base.base_component import ExecutionParameter
 from tfx.components.example_gen import driver
 from tfx.components.example_gen import utils
 from tfx.proto import example_gen_pb2
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class QueryBasedExampleGenSpec(base_component.ComponentSpec):
@@ -43,7 +44,7 @@ class QueryBasedExampleGenSpec(base_component.ComponentSpec):
   }
   INPUTS = {}
   OUTPUTS = {
-      'examples': ChannelParameter(type_name='ExamplesPath'),
+      'examples': ChannelParameter(type=standard_artifacts.Examples),
   }
 
 
@@ -59,10 +60,10 @@ class FileBasedExampleGenSpec(base_component.ComponentSpec):
           ExecutionParameter(type=example_gen_pb2.CustomConfig, optional=True),
   }
   INPUTS = {
-      'input_base': ChannelParameter(type_name='ExternalPath'),
+      'input_base': ChannelParameter(type=standard_artifacts.ExternalArtifact),
   }
   OUTPUTS = {
-      'examples': ChannelParameter(type_name='ExamplesPath'),
+      'examples': ChannelParameter(type=standard_artifacts.Examples),
   }
 
 
@@ -82,7 +83,7 @@ class _QueryBasedExampleGen(base_component.BaseComponent):
                output_config: Optional[example_gen_pb2.Output] = None,
                custom_config: Optional[example_gen_pb2.CustomConfig] = None,
                component_name: Optional[Text] = 'ExampleGen',
-               example_artifacts: Optional[channel.Channel] = None,
+               example_artifacts: Optional[types.Channel] = None,
                name: Optional[Text] = None):
     """Construct an QueryBasedExampleGen component.
 
@@ -103,8 +104,8 @@ class _QueryBasedExampleGen(base_component.BaseComponent):
     # Configure outputs.
     output_config = output_config or utils.make_default_output_config(
         input_config)
-    example_artifacts = example_artifacts or channel.as_channel([
-        types.Artifact('ExamplesPath', split=split_name)
+    example_artifacts = example_artifacts or channel_utils.as_channel([
+        standard_artifacts.Examples(split=split_name)
         for split_name in utils.generate_output_split_names(
             input_config, output_config)
     ])
@@ -130,12 +131,12 @@ class FileBasedExampleGen(base_component.BaseComponent):
 
   def __init__(
       self,
-      input_base: channel.Channel,
+      input_base: types.Channel,
       input_config: Optional[example_gen_pb2.Input] = None,
       output_config: Optional[example_gen_pb2.Output] = None,
       custom_config: Optional[example_gen_pb2.CustomConfig] = None,
       component_name: Optional[Text] = 'ExampleGen',
-      example_artifacts: Optional[channel.Channel] = None,
+      example_artifacts: Optional[types.Channel] = None,
       executor_class: Optional[Type[base_executor.BaseExecutor]] = None,
       name: Optional[Text] = None):
     """Construct a FileBasedExampleGen component.
@@ -163,8 +164,8 @@ class FileBasedExampleGen(base_component.BaseComponent):
     input_config = input_config or utils.make_default_input_config()
     output_config = output_config or utils.make_default_output_config(
         input_config)
-    example_artifacts = example_artifacts or channel.as_channel([
-        types.Artifact('ExamplesPath', split=split_name)
+    example_artifacts = example_artifacts or channel_utils.as_channel([
+        standard_artifacts.Examples(split=split_name)
         for split_name in utils.generate_output_split_names(
             input_config, output_config)
     ])

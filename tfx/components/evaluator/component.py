@@ -25,7 +25,8 @@ from tfx.components.base.base_component import ChannelParameter
 from tfx.components.base.base_component import ExecutionParameter
 from tfx.components.evaluator import executor
 from tfx.proto import evaluator_pb2
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class EvaluatorSpec(base_component.ComponentSpec):
@@ -36,11 +37,11 @@ class EvaluatorSpec(base_component.ComponentSpec):
           type=evaluator_pb2.FeatureSlicingSpec),
   }
   INPUTS = {
-      'examples': ChannelParameter(type_name='ExamplesPath'),
-      'model_exports': ChannelParameter(type_name='ModelExportPath'),
+      'examples': ChannelParameter(type=standard_artifacts.Examples),
+      'model_exports': ChannelParameter(type=standard_artifacts.Model),
   }
   OUTPUTS = {
-      'output': ChannelParameter(type_name='ModelEvalPath'),
+      'output': ChannelParameter(type=standard_artifacts.ModelEvalResult),
   }
 
 
@@ -55,10 +56,10 @@ class Evaluator(base_component.BaseComponent):
 
   def __init__(
       self,
-      examples: channel.Channel,
-      model_exports: channel.Channel,
+      examples: types.Channel,
+      model_exports: types.Channel,
       feature_slicing_spec: Optional[evaluator_pb2.FeatureSlicingSpec] = None,
-      output: Optional[channel.Channel] = None,
+      output: Optional[types.Channel] = None,
       name: Optional[Text] = None):
     """Construct an Evaluator component.
 
@@ -73,12 +74,13 @@ class Evaluator(base_component.BaseComponent):
       name: Optional unique name. Necessary if multiple Evaluator components are
         declared in the same pipeline.
     """
-    output = output or channel.Channel(
-        type_name='ModelEvalPath', artifacts=[types.Artifact('ModelEvalPath')])
+    output = output or types.Channel(
+        type=standard_artifacts.ModelEvalResult,
+        artifacts=[standard_artifacts.ModelEvalResult()])
     spec = EvaluatorSpec(
-        examples=channel.as_channel(examples),
-        model_exports=channel.as_channel(model_exports),
-        feature_slicing_spec=(
-            feature_slicing_spec or evaluator_pb2.FeatureSlicingSpec()),
+        examples=channel_utils.as_channel(examples),
+        model_exports=channel_utils.as_channel(model_exports),
+        feature_slicing_spec=(feature_slicing_spec or
+                              evaluator_pb2.FeatureSlicingSpec()),
         output=output)
     super(Evaluator, self).__init__(spec=spec, name=name)

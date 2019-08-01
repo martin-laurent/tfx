@@ -25,7 +25,8 @@ from tfx.components.base.base_component import ChannelParameter
 from tfx.components.base.base_component import ExecutionParameter
 from tfx.components.pusher import executor
 from tfx.proto import pusher_pb2
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class PusherSpec(base_component.ComponentSpec):
@@ -37,11 +38,11 @@ class PusherSpec(base_component.ComponentSpec):
       'custom_config': ExecutionParameter(type=Dict[Text, Any], optional=True),
   }
   INPUTS = {
-      'model_export': ChannelParameter(type_name='ModelExportPath'),
-      'model_blessing': ChannelParameter(type_name='ModelBlessingPath'),
+      'model_export': ChannelParameter(type=standard_artifacts.Model),
+      'model_blessing': ChannelParameter(type=standard_artifacts.ModelBlessing),
   }
   OUTPUTS = {
-      'model_push': ChannelParameter(type_name='ModelPushPath'),
+      'model_push': ChannelParameter(type=standard_artifacts.PushedModel),
   }
 
 
@@ -57,15 +58,15 @@ class Pusher(base_component.BaseComponent):
   SPEC_CLASS = PusherSpec
   EXECUTOR_CLASS = executor.Executor
 
-  def __init__(self,
-               model_export: channel.Channel,
-               model_blessing: channel.Channel,
-               push_destination: Optional[pusher_pb2.PushDestination] = None,
-               custom_config: Optional[Dict[Text, Any]] = None,
-               executor_class: Optional[Type[
-                   base_executor.BaseExecutor]] = None,
-               model_push: Optional[channel.Channel] = None,
-               name: Optional[Text] = None):
+  def __init__(
+      self,
+      model_export: types.Channel,
+      model_blessing: types.Channel,
+      push_destination: Optional[pusher_pb2.PushDestination] = None,
+      custom_config: Optional[Dict[Text, Any]] = None,
+      executor_class: Optional[Type[base_executor.BaseExecutor]] = None,
+      model_push: Optional[types.Channel] = None,
+      name: Optional[Text] = None):
     """Construct a Pusher component.
 
     Args:
@@ -85,15 +86,16 @@ class Pusher(base_component.BaseComponent):
       name: Optional unique name. Necessary if multiple Pusher components are
         declared in the same pipeline.
     """
-    model_push = model_push or channel.Channel(
-        type_name='ModelPushPath', artifacts=[types.Artifact('ModelPushPath')])
+    model_push = model_push or types.Channel(
+        type=standard_artifacts.PushedModel,
+        artifacts=[standard_artifacts.PushedModel()])
     if push_destination is None and not executor_class:
       raise ValueError('push_destination is required unless a custom '
                        'executor_class is supplied that does not require '
                        'it.')
     spec = PusherSpec(
-        model_export=channel.as_channel(model_export),
-        model_blessing=channel.as_channel(model_blessing),
+        model_export=channel_utils.as_channel(model_export),
+        model_blessing=channel_utils.as_channel(model_blessing),
         push_destination=push_destination,
         custom_config=custom_config,
         model_push=model_push)

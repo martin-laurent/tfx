@@ -28,7 +28,7 @@ from tfx import types
 from tfx.components.base import base_component
 from tfx.components.base.base_component import ChannelParameter
 from tfx.components.base.base_component import ExecutionParameter
-from tfx.utils import channel
+from tfx.types import standard_artifacts
 
 
 class SlackComponentSpec(base_component.ComponentSpec):
@@ -40,11 +40,11 @@ class SlackComponentSpec(base_component.ComponentSpec):
       'timeout_sec': ExecutionParameter(type=int),
   }
   INPUTS = {
-      'model_export': ChannelParameter(type_name='ModelExportPath'),
-      'model_blessing': ChannelParameter(type_name='ModelBlessingPath'),
+      'model_export': ChannelParameter(type=standard_artifacts.Model),
+      'model_blessing': ChannelParameter(type=standard_artifacts.ModelBlessing),
   }
   OUTPUTS = {
-      'slack_blessing': ChannelParameter(type_name='ModelBlessingPath'),
+      'slack_blessing': ChannelParameter(type=standard_artifacts.ModelBlessing),
   }
 
 
@@ -82,12 +82,12 @@ class SlackComponent(base_component.BaseComponent):
   EXECUTOR_CLASS = executor.Executor
 
   def __init__(self,
-               model_export: channel.Channel,
-               model_blessing: channel.Channel,
+               model_export: types.Channel,
+               model_blessing: types.Channel,
                slack_token: Text,
                channel_id: Text,
                timeout_sec: int,
-               slack_blessing: Optional[channel.Channel] = None,
+               slack_blessing: Optional[types.Channel] = None,
                name: Optional[Text] = None):
     """Construct a SlackComponent.
 
@@ -104,9 +104,9 @@ class SlackComponent(base_component.BaseComponent):
       name: Optional unique name. Necessary if multiple Pusher components are
         declared in the same pipeline.
     """
-    slack_blessing = slack_blessing or channel.Channel(
-        type_name='ModelBlessingPath',
-        artifacts=[types.Artifact('ModelBlessingPath')])
+    slack_blessing = slack_blessing or types.Channel(
+        type=standard_artifacts.ModelBlessing,
+        artifacts=[standard_artifacts.ModelBlessing()])
     spec = SlackComponentSpec(
         slack_token=slack_token,
         channel_id=channel_id,

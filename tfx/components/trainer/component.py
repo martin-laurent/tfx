@@ -26,7 +26,8 @@ from tfx.components.base.base_component import ExecutionParameter
 from tfx.components.trainer import driver
 from tfx.components.trainer import executor
 from tfx.proto import trainer_pb2
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class TrainerSpec(base_component.ComponentSpec):
@@ -40,13 +41,14 @@ class TrainerSpec(base_component.ComponentSpec):
   }
   INPUTS = {
       'examples':
-          ChannelParameter(type_name='ExamplesPath'),
+          ChannelParameter(type=standard_artifacts.Examples),
       'transform_output':
-          ChannelParameter(type_name='TransformPath', optional=True),
+          ChannelParameter(
+              type=standard_artifacts.TransformResult, optional=True),
       'schema':
-          ChannelParameter(type_name='SchemaPath'),
+          ChannelParameter(type=standard_artifacts.Schema),
   }
-  OUTPUTS = {'output': ChannelParameter(type_name='ModelExportPath')}
+  OUTPUTS = {'output': ChannelParameter(type=standard_artifacts.Model)}
 
 
 class Trainer(base_component.BaseComponent):
@@ -70,16 +72,16 @@ class Trainer(base_component.BaseComponent):
 
   def __init__(
       self,
-      examples: channel.Channel = None,
-      transformed_examples: channel.Channel = None,
-      transform_output: Optional[channel.Channel] = None,
-      schema: channel.Channel = None,
+      examples: types.Channel = None,
+      transformed_examples: types.Channel = None,
+      transform_output: Optional[types.Channel] = None,
+      schema: types.Channel = None,
       module_file: Text = None,
       train_args: trainer_pb2.TrainArgs = None,
       eval_args: trainer_pb2.EvalArgs = None,
       custom_config: Optional[Dict[Text, Any]] = None,
       executor_class: Optional[Type[base_executor.BaseExecutor]] = None,
-      output: Optional[channel.Channel] = None,
+      output: Optional[types.Channel] = None,
       name: Optional[Text] = None):
     """Construct a Trainer component.
 
@@ -105,9 +107,8 @@ class Trainer(base_component.BaseComponent):
       name: Optional unique name. Necessary iff multiple Trainer components are
         declared in the same pipeline.
     """
-    output = output or channel.Channel(
-        type_name='ModelExportPath',
-        artifacts=[types.Artifact('ModelExportPath')])
+    output = output or types.Channel(
+        type=standard_artifacts.Model, artifacts=[standard_artifacts.Model()])
     assert bool(examples) ^ bool(
         transformed_examples
     ), 'Exactly one of example or transformed_example should be set.'
@@ -116,12 +117,12 @@ class Trainer(base_component.BaseComponent):
           transform_output
       ), 'If transformed_examples is set, transform_output should be set too.'
     examples = examples or transformed_examples
-    transform_output_channel = channel.as_channel(
+    transform_output_channel = channel_utils.as_channel(
         transform_output) if transform_output else None
     spec = TrainerSpec(
-        examples=channel.as_channel(examples),
+        examples=channel_utils.as_channel(examples),
         transform_output=transform_output_channel,
-        schema=channel.as_channel(schema),
+        schema=channel_utils.as_channel(schema),
         train_args=train_args,
         eval_args=eval_args,
         module_file=module_file,

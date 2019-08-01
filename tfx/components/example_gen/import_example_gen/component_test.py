@@ -18,17 +18,17 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tfx import types
 from tfx.components.example_gen.import_example_gen import component
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class ComponentTest(tf.test.TestCase):
 
   def test_construct(self):
-    input_base = types.Artifact(type_name='ExternalPath')
+    input_base = standard_artifacts.ExternalArtifact()
     import_example_gen = component.ImportExampleGen(
-        input_base=channel.as_channel([input_base]))
+        input_base=channel_utils.as_channel([input_base]))
     self.assertEqual('ExamplesPath',
                      import_example_gen.outputs.examples.type_name)
     artifact_collection = import_example_gen.outputs.examples.get()

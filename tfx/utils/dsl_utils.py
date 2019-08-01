@@ -19,10 +19,11 @@ from __future__ import print_function
 
 from typing import Text
 from tfx import types
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
-def external_input(uri: Text) -> channel.Channel:
+def external_input(uri: Text) -> types.Channel:
   """Helper function to declare external input.
 
   Args:
@@ -31,13 +32,13 @@ def external_input(uri: Text) -> channel.Channel:
   Returns:
     input channel.
   """
-  instance = types.Artifact(type_name='ExternalPath')
+  instance = standard_artifacts.ExternalArtifact()
   instance.uri = uri
-  return channel.as_channel([instance])
+  return channel_utils.as_channel([instance])
 
 
 # TODO(b/136598840): deprecate this, use external_input.
-def csv_input(uri: Text) -> channel.Channel:
+def csv_input(uri: Text) -> types.Channel:
   """Helper function to declare input for csv_example_gen component.
 
   Args:
@@ -50,7 +51,7 @@ def csv_input(uri: Text) -> channel.Channel:
 
 
 # TODO(b/136598840): deprecate this, use external_input.
-def tfrecord_input(uri: Text) -> channel.Channel:
+def tfrecord_input(uri: Text) -> types.Channel:
   """Helper function to declare input for import_example_gen component.
 
   Args:

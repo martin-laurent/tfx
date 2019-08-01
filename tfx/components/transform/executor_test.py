@@ -23,6 +23,7 @@ import tensorflow as tf
 import tensorflow_transform as tft
 from tfx import types
 from tfx.components.transform import executor
+from tfx.types import standard_artifacts
 
 
 # TODO(b/122478841): Add more detailed tests.
@@ -40,9 +41,9 @@ class ExecutorTest(tf.test.TestCase):
     return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'testdata')
 
   def _make_base_do_params(self, source_data_dir, output_data_dir):
-    train_artifact = types.Artifact('ExamplesPath', split='train')
+    train_artifact = standard_artifacts.Examples(split='train')
     train_artifact.uri = os.path.join(source_data_dir, 'csv_example_gen/train/')
-    eval_artifact = types.Artifact('ExamplesPath', split='eval')
+    eval_artifact = standard_artifacts.Examples(split='eval')
     eval_artifact.uri = os.path.join(source_data_dir, 'csv_example_gen/eval/')
     schema_artifact = types.Artifact('Schema')
     schema_artifact.uri = os.path.join(source_data_dir, 'schema_gen/')
@@ -50,11 +51,11 @@ class ExecutorTest(tf.test.TestCase):
     module_file = os.path.join(source_data_dir,
                                'module_file/transform_module.py')
 
-    transformed_output = types.Artifact('TransformPath')
+    transformed_output = standard_artifacts.TransformResult()
     transformed_output.uri = os.path.join(output_data_dir, 'transformed_output')
-    transformed_train_examples = types.Artifact('ExamplesPath', split='train')
+    transformed_train_examples = standard_artifacts.Examples(split='train')
     transformed_train_examples.uri = os.path.join(output_data_dir, 'train')
-    transformed_eval_examples = types.Artifact('ExamplesPath', split='eval')
+    transformed_eval_examples = standard_artifacts.Examples(split='eval')
     transformed_eval_examples.uri = os.path.join(output_data_dir, 'eval')
     temp_path_output = types.Artifact('TempPath')
     temp_path_output.uri = tempfile.mkdtemp()

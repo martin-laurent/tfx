@@ -19,9 +19,9 @@ from __future__ import print_function
 
 import os
 import tensorflow as tf
-from tfx import types
 from tfx.components.transform import component
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class TransformTest(tf.test.TestCase):
@@ -32,11 +32,11 @@ class TransformTest(tf.test.TestCase):
     preprocessing_fn_file = os.path.join(source_data_dir, 'module',
                                          'preprocess.py')
     transform = component.Transform(
-        input_data=channel.as_channel([
-            types.Artifact(type_name='ExamplesPath', split='train'),
-            types.Artifact(type_name='ExamplesPath', split='eval'),
+        input_data=channel_utils.as_channel([
+            standard_artifacts.Examples(split='train'),
+            standard_artifacts.Examples(split='eval'),
         ]),
-        schema=channel.as_channel([types.Artifact(type_name='SchemaPath')]),
+        schema=channel_utils.as_channel([standard_artifacts.Schema()]),
         module_file=preprocessing_fn_file,
     )
     self.assertEqual('TransformPath',

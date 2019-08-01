@@ -22,7 +22,8 @@ from tfx.components.base import base_component
 from tfx.components.base.base_component import ChannelParameter
 from tfx.components.base.base_component import ExecutionParameter
 from tfx.components.transform import executor
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class TransformSpec(base_component.ComponentSpec):
@@ -32,12 +33,14 @@ class TransformSpec(base_component.ComponentSpec):
       'module_file': ExecutionParameter(type=(str, Text)),
   }
   INPUTS = {
-      'input_data': ChannelParameter(type_name='ExamplesPath'),
-      'schema': ChannelParameter(type_name='SchemaPath'),
+      'input_data': ChannelParameter(type=standard_artifacts.Examples),
+      'schema': ChannelParameter(type=standard_artifacts.Schema),
   }
   OUTPUTS = {
-      'transform_output': ChannelParameter(type_name='TransformPath'),
-      'transformed_examples': ChannelParameter(type_name='ExamplesPath'),
+      'transform_output':
+          ChannelParameter(type=standard_artifacts.TransformResult),
+      'transformed_examples':
+          ChannelParameter(type=standard_artifacts.Examples),
   }
 
 
@@ -57,11 +60,11 @@ class Transform(base_component.BaseComponent):
   EXECUTOR_CLASS = executor.Executor
 
   def __init__(self,
-               input_data: channel.Channel = None,
-               schema: channel.Channel = None,
+               input_data: types.Channel = None,
+               schema: types.Channel = None,
                module_file: Text = None,
-               transform_output: Optional[channel.Channel] = None,
-               transformed_examples: Optional[channel.Channel] = None,
+               transform_output: Optional[types.Channel] = None,
+               transformed_examples: Optional[types.Channel] = None,
                name: Optional[Text] = None):
     """Construct a Transform component.
 
@@ -81,17 +84,18 @@ class Transform(base_component.BaseComponent):
       name: Optional unique name. Necessary iff multiple transform components
         are declared in the same pipeline.
     """
-    transform_output = transform_output or channel.Channel(
-        type_name='TransformPath', artifacts=[types.Artifact('TransformPath')])
-    transformed_examples = transformed_examples or channel.Channel(
-        type_name='ExamplesPath',
+    transform_output = transform_output or types.Channel(
+        type=standard_artifacts.TransformResult,
+        artifacts=[standard_artifacts.TransformResult()])
+    transformed_examples = transformed_examples or types.Channel(
+        type=standard_artifacts.Examples,
         artifacts=[
-            types.Artifact('ExamplesPath', split=split)
+            standard_artifacts.Examples(split=split)
             for split in types.DEFAULT_EXAMPLE_SPLITS
         ])
     spec = TransformSpec(
-        input_data=channel.as_channel(input_data),
-        schema=channel.as_channel(schema),
+        input_data=channel_utils.as_channel(input_data),
+        schema=channel_utils.as_channel(schema),
         module_file=module_file,
         transform_output=transform_output,
         transformed_examples=transformed_examples)

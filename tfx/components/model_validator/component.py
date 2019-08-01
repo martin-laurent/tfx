@@ -25,7 +25,8 @@ from tfx.components.base.base_component import ChannelParameter
 from tfx.components.base.base_component import ExecutionParameter
 from tfx.components.model_validator import driver
 from tfx.components.model_validator import executor
-from tfx.utils import channel
+from tfx.types import channel_utils
+from tfx.types import standard_artifacts
 
 
 class ModelValidatorSpec(base_component.ComponentSpec):
@@ -35,11 +36,11 @@ class ModelValidatorSpec(base_component.ComponentSpec):
       'component_unique_name': ExecutionParameter(type=str),
   }
   INPUTS = {
-      'examples': ChannelParameter(type_name='ExamplesPath'),
-      'model': ChannelParameter(type_name='ModelExportPath'),
+      'examples': ChannelParameter(type=standard_artifacts.Examples),
+      'model': ChannelParameter(type=standard_artifacts.Model),
   }
   OUTPUTS = {
-      'blessing': ChannelParameter(type_name='ModelBlessingPath'),
+      'blessing': ChannelParameter(type=standard_artifacts.ModelBlessing),
   }
 
 
@@ -58,9 +59,9 @@ class ModelValidator(base_component.BaseComponent):
   DRIVER_CLASS = driver.Driver
 
   def __init__(self,
-               examples: channel.Channel,
-               model: channel.Channel,
-               blessing: Optional[channel.Channel] = None,
+               examples: types.Channel,
+               model: types.Channel,
+               blessing: Optional[types.Channel] = None,
                name: Optional[Text] = None):
     """Construct a ModelValidator component.
 
@@ -74,13 +75,13 @@ class ModelValidator(base_component.BaseComponent):
       name: Optional unique name. Necessary if multiple ModelValidator
         components are declared in the same pipeline.
     """
-    blessing = blessing or channel.Channel(
-        type_name='ModelBlessingPath',
-        artifacts=[types.Artifact('ModelBlessingPath')])
+    blessing = blessing or types.Channel(
+        type=standard_artifacts.ModelBlessing,
+        artifacts=[standard_artifacts.ModelBlessing()])
     name = name or ''
     spec = ModelValidatorSpec(
-        examples=channel.as_channel(examples),
-        model=channel.as_channel(model),
+        examples=channel_utils.as_channel(examples),
+        model=channel_utils.as_channel(model),
         component_unique_name=name,
         blessing=blessing)
     super(ModelValidator, self).__init__(spec=spec, name=name)
